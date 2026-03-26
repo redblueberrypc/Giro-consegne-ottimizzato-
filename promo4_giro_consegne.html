@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giro Consegne Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#03070f;
+  --s1:#060d1a;
+  --s2:#0a1220;
+  --border:#0e1e35;
+  --blu:#1a6de0;
+  --blu2:#3d9de8;
+  --ocra:#c88a2a;
+  --ocra2:#e8b84e;
+  --text:#dde8f8;
+  --dim:#3a5070;
+  --r:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Fraunces',serif;overflow-x:hidden;cursor:none}
+
+/* CURSORE */
+.cursor{position:fixed;z-index:99999;pointer-events:none}
+.cursor-dot{width:8px;height:8px;background:var(--ocra);border-radius:50%;transform:translate(-50%,-50%);transition:transform .1s;position:fixed;top:0;left:0}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(200,138,42,.35);border-radius:50%;transform:translate(-50%,-50%);transition:all .12s ease;pointer-events:none;z-index:99998;top:0;left:0}
+
+/* AUDIO */
+#audioBtn{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  width:44px;height:44px;border-radius:50%;
+  background:var(--ocra);border:none;
+  color:#000;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .15s;
+  box-shadow:0 4px 20px rgba(200,138,42,.4);
+}
+#audioBtn:hover{background:var(--ocra2);transform:scale(1.1)}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:20px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,var(--bg) 0%,transparent 100%);
+}
+.nav-logo{
+  font-family:'DM Mono',monospace;font-size:13px;font-weight:500;
+  color:var(--dim);letter-spacing:2px;text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-logo::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ocra);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,138,42,.4)}70%{opacity:.7;box-shadow:0 0 0 8px transparent}}
+.nav-cta{
+  background:var(--ocra);color:#000;border:none;border-radius:6px;
+  font-family:'DM Mono',monospace;font-size:12px;font-weight:500;
+  letter-spacing:1px;text-transform:uppercase;padding:10px 20px;
+  cursor:pointer;transition:background .2s,transform .15s;text-decoration:none;display:inline-block;
+}
+.nav-cta:hover{background:var(--ocra2);transform:translateY(-1px)}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;padding:120px 48px 80px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 60% at 80% 50%, rgba(26,109,224,.08) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(200,138,42,.06) 0%,transparent 60%);
+}
+.hero-tag{
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+  color:var(--ocra);letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:28px;opacity:0;animation:fadeIn .8s .1s ease forwards;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-tag::before{content:'//';color:var(--dim)}
+h1{
+  font-family:'Fraunces',serif;font-size:clamp(52px,7.5vw,110px);
+  font-weight:300;line-height:1.0;letter-spacing:-2px;margin-bottom:0;
+  opacity:0;animation:fadeIn .9s .2s ease forwards;
+}
+h1 em{font-style:italic;color:var(--ocra);font-weight:300}
+h1 .blu{color:var(--blu2)}
+h1 .line2{display:block;text-indent:clamp(40px,8vw,120px)}
+.hero-desc{
+  max-width:480px;font-size:16px;font-weight:300;line-height:1.8;
+  color:var(--dim);margin:36px 0 48px;opacity:0;animation:fadeIn .8s .4s ease forwards;
+  font-family:'Fraunces',serif;font-style:italic;
+}
+.hero-btns{
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  opacity:0;animation:fadeIn .8s .5s ease forwards;
+}
+.btn-main{
+  background:var(--ocra);color:#000;border:none;border-radius:6px;
+  font-family:'DM Mono',monospace;font-size:13px;font-weight:500;
+  letter-spacing:1.5px;text-transform:uppercase;padding:16px 36px;
+  cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;
+  text-decoration:none;display:inline-block;
+  box-shadow:0 0 40px rgba(200,138,42,.2);
+}
+.btn-main:hover{background:var(--ocra2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(200,138,42,.3)}
+.btn-main:active{transform:scale(.97)}
+.btn-ghost{
+  font-family:'DM Mono',monospace;font-size:12px;font-weight:500;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);
+  text-decoration:none;border-bottom:1px solid var(--border);padding-bottom:2px;
+  transition:color .2s,border-color .2s;cursor:pointer;
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--dim)}
+.hero-price-tag{
+  position:absolute;right:48px;bottom:80px;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);
+  letter-spacing:1px;writing-mode:vertical-rl;
+  opacity:0;animation:fadeIn 1s .7s ease forwards;
+}
+.hero-price-tag strong{color:var(--ocra);font-size:14px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* MARQUEE */
+.marquee-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 0;background:var(--s1)}
+.marquee-track{display:flex;gap:0;white-space:nowrap;animation:scroll 24s linear infinite}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{
+  font-family:'DM Mono',monospace;font-size:12px;font-weight:500;
+  color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;
+  padding:0 32px;border-right:1px solid var(--border);
+  display:inline-flex;align-items:center;gap:10px;
+}
+.marquee-item span{color:var(--blu2)}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* MANIFESTO */
+.manifesto{
+  padding:120px 48px;display:grid;grid-template-columns:1fr 2fr;gap:80px;
+  align-items:start;max-width:1200px;margin:0 auto;
+}
+.manifesto-label{
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--ocra);
+  letter-spacing:3px;text-transform:uppercase;padding-top:8px;position:sticky;top:100px;
+}
+.manifesto-text h2{font-size:clamp(32px,4vw,52px);font-weight:300;line-height:1.15;letter-spacing:-1px;margin-bottom:32px}
+.manifesto-text h2 em{font-style:italic;color:var(--ocra)}
+.pain-list{display:flex;flex-direction:column;gap:0}
+.pain-item{
+  display:flex;align-items:center;gap:20px;
+  padding:18px 0;border-bottom:1px solid var(--border);
+  font-size:15px;color:var(--dim);font-weight:300;transition:color .2s;
+}
+.pain-item:hover{color:var(--text)}
+.pain-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--border);letter-spacing:1px;flex-shrink:0}
+.pain-x{color:rgba(255,80,80,.4);font-size:18px;flex-shrink:0}
+
+/* FEATURES */
+.features{padding:0 48px 120px;max-width:1200px;margin:0 auto}
+.feat-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:48px;border-bottom:1px solid var(--border);padding-bottom:20px}
+.feat-header h2{font-size:clamp(28px,3vw,40px);font-weight:300;letter-spacing:-1px}
+.feat-header .fh-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:2px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.feat{background:var(--s1);padding:32px 28px;transition:background .25s;border-top:2px solid transparent;transition:background .25s,border-color .25s}
+.feat:hover{background:var(--s2);border-top-color:var(--blu)}
+.feat-n{font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:20px}
+.feat-ico{font-size:28px;margin-bottom:14px;display:block}
+.feat-t{font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
+.feat-d{font-size:13px;color:var(--dim);line-height:1.7;font-weight:300;font-family:'Fraunces',serif;font-style:italic}
+
+/* STEPS */
+.steps-section{padding:120px 48px;background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.steps-inner{max-width:1200px;margin:0 auto}
+.steps-header{margin-bottom:64px}
+.steps-header h2{font-size:clamp(28px,3.5vw,48px);font-weight:300;letter-spacing:-1px}
+.steps-header h2 em{font-style:italic;color:var(--ocra)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.step{background:var(--s1);padding:40px 32px;border-bottom:3px solid transparent;transition:border-color .25s}
+.step:hover{border-bottom-color:var(--ocra)}
+.step-n{font-family:'DM Mono',monospace;font-size:48px;font-weight:500;color:var(--border);line-height:1;margin-bottom:24px}
+.step-t{font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:-.2px}
+.step-d{font-size:13px;color:var(--dim);line-height:1.75;font-family:'Fraunces',serif;font-style:italic;font-weight:300}
+
+/* PRICING */
+.pricing{padding:120px 48px;max-width:900px;margin:0 auto;text-align:center}
+.pricing-eyebrow{font-family:'DM Mono',monospace;font-size:11px;color:var(--ocra);letter-spacing:3px;text-transform:uppercase;margin-bottom:20px}
+.pricing h2{font-size:clamp(36px,5vw,64px);font-weight:300;letter-spacing:-2px;line-height:1.05;margin-bottom:60px}
+.pricing h2 em{font-style:italic;color:var(--ocra)}
+.price-box{
+  border:1px solid var(--border);border-radius:16px;padding:60px;text-align:left;
+  position:relative;overflow:hidden;background:var(--s1);
+}
+.price-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blu),var(--ocra),transparent)}
+.pb-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;padding-bottom:40px;border-bottom:1px solid var(--border)}
+.pb-price{font-family:'DM Mono',monospace;font-size:72px;font-weight:500;color:var(--ocra);line-height:1;letter-spacing:-3px}
+.pb-info-t{font-size:14px;font-weight:700;margin-bottom:4px;text-align:right}
+.pb-info-s{font-size:12px;color:var(--dim);font-family:'DM Mono',monospace;text-align:right}
+.pb-features{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:48px}
+.pbf{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--dim);font-weight:300;font-family:'Fraunces',serif;font-style:italic}
+.pbf::before{content:'→';color:var(--blu2);font-style:normal;font-family:'DM Mono',monospace;font-size:11px;margin-top:2px;flex-shrink:0}
+
+/* FORM */
+.form-section{padding:0 48px 120px;max-width:900px;margin:0 auto}
+.form-box{border:1px solid var(--border);border-radius:16px;padding:60px;background:var(--s1)}
+.form-box h3{font-size:28px;font-weight:300;letter-spacing:-1px;margin-bottom:6px}
+.form-sub{font-size:14px;color:var(--dim);margin-bottom:36px;font-family:'Fraunces',serif;font-style:italic;font-weight:300}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fg{margin-bottom:18px}
+.fg label{display:block;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);margin-bottom:8px}
+.fg input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;padding:14px 16px;outline:none;transition:border-color .2s}
+.fg input:focus{border-color:var(--blu)}
+.fg input::placeholder{color:var(--dim)}
+.warn-box{display:flex;gap:14px;background:rgba(200,138,42,.04);border:1px solid rgba(200,138,42,.15);border-radius:var(--r);padding:16px;margin-bottom:20px}
+.wb-ico{font-size:18px;flex-shrink:0;margin-top:2px}
+.wb-t{font-size:12px;color:var(--dim);line-height:1.75;font-family:'DM Mono',monospace}
+.wb-t strong{color:rgba(200,138,42,.8);display:block;margin-bottom:4px;letter-spacing:.5px}
+.consent{background:rgba(26,109,224,.04);border:1px solid rgba(26,109,224,.15);border-radius:var(--r);padding:16px;margin-bottom:28px;transition:border-color .2s}
+.consent:has(input:checked){border-color:rgba(200,138,42,.4)}
+.consent label{display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);line-height:1.7}
+.consent input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:var(--ocra)}
+.consent a{color:var(--blu2);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
+.consent a:hover{border-color:var(--blu2)}
+.pp-btn{
+  width:100%;background:var(--ocra);color:#000;border:none;border-radius:var(--r);
+  font-family:'DM Mono',monospace;font-size:14px;font-weight:500;
+  letter-spacing:2px;text-transform:uppercase;padding:18px;cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  box-shadow:0 0 40px rgba(200,138,42,.15);
+}
+.pp-btn:hover{background:var(--ocra2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(200,138,42,.25)}
+.pp-btn:active{transform:scale(.98)}
+.pp-note{text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:12px;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+#successBox{display:none;text-align:center;padding:40px 0}
+#successBox .si{font-size:56px;margin-bottom:20px}
+#successBox .st{font-size:32px;font-weight:300;letter-spacing:-1px;margin-bottom:12px}
+#successBox .ss{font-size:14px;color:var(--dim);line-height:1.8;font-family:'Fraunces',serif;font-style:italic;font-weight:300;max-width:400px;margin:0 auto}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9990;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px)}
+.mov.on{display:flex}
+.mb{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto}
+.mb h2{font-size:24px;font-weight:300;letter-spacing:-1px;color:var(--ocra);margin-bottom:4px}
+.mb h3{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:2px;color:var(--text);margin:20px 0 6px}
+.mb p,.mb li{font-size:13px;color:var(--dim);line-height:1.8;font-family:'Fraunces',serif;font-style:italic;font-weight:300}
+.mb ul{padding-left:16px;margin-bottom:8px}
+.mc{width:100%;background:var(--ocra);color:#000;border:none;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:14px;cursor:pointer;margin-top:24px;transition:background .2s}
+.mc:hover{background:var(--ocra2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:12px 24px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.5px;z-index:20000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;box-shadow:0 8px 40px rgba(0,0,0,.5);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.s{border-color:rgba(200,138,42,.4);color:var(--ocra)}
+.toast.e{border-color:rgba(255,80,80,.3);color:#ff8080}
+.toast.i{border-color:rgba(26,109,224,.4);color:var(--blu2)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:40px 48px;display:flex;align-items:center;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:1px}
+footer a{color:var(--dim);text-decoration:none;transition:color .2s}
+footer a:hover{color:var(--ocra)}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.rev.on{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  nav{padding:16px 24px}.hero{padding:100px 24px 80px}.hero-price-tag{display:none}
+  .manifesto{grid-template-columns:1fr;padding:80px 24px;gap:40px}.manifesto-label{position:static}
+  .features{padding:0 24px 80px}.feat-grid{grid-template-columns:1fr}
+  .steps-section{padding:80px 24px}.steps-grid{grid-template-columns:1fr}
+  .pricing{padding:80px 24px}.price-box{padding:32px 24px}
+  .pb-top{flex-direction:column;align-items:flex-start;gap:16px}.pb-info-t,.pb-info-s{text-align:left}
+  .pb-features{grid-template-columns:1fr}
+  .form-section{padding:0 24px 80px}.form-box{padding:32px 24px}.frow{grid-template-columns:1fr}
+  footer{flex-direction:column;gap:12px;text-align:center;padding:32px 24px}
+  body{cursor:auto}.cursor,.cursor-ring{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cdot"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<audio id="bgAudio" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+</audio>
+<button id="audioBtn">🔇</button>
+
+<!-- MODAL PRIVACY -->
+<div class="mov" id="privOv">
+  <div class="mb">
+    <h2>Privacy Policy</h2>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:4px">REG. UE 2016/679 — GDPR</p>
+    <h3>Titolare</h3><p>Luca Buzzolan — buzzoluca73@gmail.com — Veneto, Italia</p>
+    <h3>Dati raccolti</h3>
+    <ul>
+      <li>Nome, cognome, email — per inviare la chiave di accesso personale</li>
+      <li>Pagamento — gestito da PayPal; il venditore non accede ai dati della carta</li>
+    </ul>
+    <h3>Base giuridica</h3><p>Consenso (Art. 6.1.a GDPR) ed esecuzione del contratto (Art. 6.1.b GDPR).</p>
+    <h3>Conservazione</h3><p>Dati conservati per il tempo necessario e per obblighi fiscali (max 10 anni). Non ceduti a terzi.</p>
+    <h3>Diritti</h3><p>Accesso, rettifica, cancellazione: buzzoluca73@gmail.com</p>
+    <h3>Trasferimenti extra-UE</h3><p>Pagamento tramite PayPal Inc. (USA) — clausole standard UE.</p>
+    <button class="mc" onclick="chiudiPrivacy()">→ Chiudi</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav>
+  <div class="nav-logo">🚚 Giro Consegne Pro</div>
+  <a href="#acquista" class="nav-cta">Acquista — €20</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">App per corrieri e consegne</div>
+  <h1>Consegna<br><span class="line2">di <em>più.</em></span></h1>
+  <p class="hero-desc">L'intelligenza artificiale organizza il tuo giro nel percorso più veloce. La navigazione GPS ti guida svolta dopo svolta, in italiano.</p>
+  <div class="hero-btns">
+    <a href="#acquista" class="btn-main">Acquista ora — €20</a>
+    <a href="#funziona" class="btn-ghost">Come funziona</a>
+  </div>
+  <div class="hero-price-tag">Licenza a vita &nbsp;·&nbsp; <strong>€20</strong> &nbsp;·&nbsp; Nessun abbonamento</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item"><span>→</span> AI Ottimizzazione</span>
+    <span class="marquee-item"><span>→</span> GPS Turn-by-Turn</span>
+    <span class="marquee-item"><span>→</span> Voce Italiana</span>
+    <span class="marquee-item"><span>→</span> Finestre Orarie</span>
+    <span class="marquee-item"><span>→</span> Foto WhatsApp</span>
+    <span class="marquee-item"><span>→</span> Salva Giri</span>
+    <span class="marquee-item"><span>→</span> Schermo Attivo</span>
+    <span class="marquee-item"><span>→</span> Ricalcolo Auto</span>
+    <span class="marquee-item"><span>→</span> AI Ottimizzazione</span>
+    <span class="marquee-item"><span>→</span> GPS Turn-by-Turn</span>
+    <span class="marquee-item"><span>→</span> Voce Italiana</span>
+    <span class="marquee-item"><span>→</span> Finestre Orarie</span>
+    <span class="marquee-item"><span>→</span> Foto WhatsApp</span>
+    <span class="marquee-item"><span>→</span> Salva Giri</span>
+    <span class="marquee-item"><span>→</span> Schermo Attivo</span>
+    <span class="marquee-item"><span>→</span> Ricalcolo Auto</span>
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="manifesto rev">
+  <div class="manifesto-label">// Il problema</div>
+  <div class="manifesto-text">
+    <h2>Ogni giorno perdi tempo<br>su percorsi <em>sbagliati.</em></h2>
+    <div class="pain-list">
+      <div class="pain-item"><span class="pain-num">01</span><span class="pain-x">✗</span>Fermate in ordine casuale — torni sullo stesso percorso due volte</div>
+      <div class="pain-item"><span class="pain-num">02</span><span class="pain-x">✗</span>Finestre orarie ignorate — cliente chiuso quando arrivi</div>
+      <div class="pain-item"><span class="pain-num">03</span><span class="pain-x">✗</span>Navigatori generici non sanno dove stai andando</div>
+      <div class="pain-item"><span class="pain-num">04</span><span class="pain-x">✗</span>Nessuna conferma fotografica della consegna</div>
+      <div class="pain-item"><span class="pain-num">05</span><span class="pain-x">✗</span>Giri abituali da rifare ogni mattina da zero</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features rev">
+  <div class="feat-header">
+    <h2>Le funzioni</h2>
+    <div class="fh-count">08 features</div>
+  </div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-n">01 / 08</div><span class="feat-ico">🤖</span><div class="feat-t">AI Ottimizza il Percorso</div><div class="feat-d">Claude AI riordina le fermate per orario e distanza minima. Il giro più efficiente in secondi.</div></div>
+    <div class="feat"><div class="feat-n">02 / 08</div><span class="feat-ico">🧭</span><div class="feat-t">Navigazione Turn-by-Turn</div><div class="feat-d">Istruzioni vocali in italiano, ricalcolo automatico se esci dal percorso previsto.</div></div>
+    <div class="feat"><div class="feat-n">03 / 08</div><span class="feat-ico">⏰</span><div class="feat-t">Finestre Orarie</div><div class="feat-d">Inserisci dalle/entro per ogni cliente — l'app pianifica rispettando ogni vincolo.</div></div>
+    <div class="feat"><div class="feat-n">04 / 08</div><span class="feat-ico">🗺️</span><div class="feat-t">Mappa su Strade Reali</div><div class="feat-d">Percorso tracciato con GraphHopper su OpenStreetMap. GPS sempre aggiornato.</div></div>
+    <div class="feat"><div class="feat-n">05 / 08</div><span class="feat-ico">📷</span><div class="feat-t">Foto + WhatsApp</div><div class="feat-d">Scatta foto della consegna e invia conferma al cliente direttamente dall'app.</div></div>
+    <div class="feat"><div class="feat-n">06 / 08</div><span class="feat-ico">💾</span><div class="feat-t">Salva e Riutilizza</div><div class="feat-d">Esporta i giri in JSON e reimportali. I percorsi abituali pronti in un tap.</div></div>
+    <div class="feat"><div class="feat-n">07 / 08</div><span class="feat-ico">🔊</span><div class="feat-t">Voce a 200m, 80m, 30m</div><div class="feat-d">Avvisi progressivi prima di ogni svolta. Mani libere, occhi sulla strada.</div></div>
+    <div class="feat"><div class="feat-n">08 / 08</div><span class="feat-ico">💡</span><div class="feat-t">Schermo Sempre Acceso</div><div class="feat-d">Wake Lock attivo durante la navigazione. Lo schermo non si spegne mai.</div></div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps-section rev" id="funziona">
+  <div class="steps-inner">
+    <div class="steps-header">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ocra);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">// Come funziona</div>
+      <h2>Tre passi.<br><em>Poi si lavora.</em></h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step"><div class="step-n">01</div><div class="step-t">Acquisti la licenza</div><div class="step-d">Pagamento sicuro PayPal — €20 una tantum. Nessun abbonamento, nessun costo nascosto.</div></div>
+      <div class="step"><div class="step-n">02</div><div class="step-t">Ricevi link e chiave</div><div class="step-d">Entro 24 ore ricevi il link dell'app e la tua chiave di accesso personale e nominativa.</div></div>
+      <div class="step"><div class="step-n">03</div><div class="step-t">Inserisci e parti</div><div class="step-d">Cerca gli indirizzi, premi Organizza Giro. L'AI sistema tutto — tu guida e consegna.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing rev" id="acquista">
+  <div class="pricing-eyebrow">// Acquista</div>
+  <h2>Una cifra.<br><em>Per sempre.</em></h2>
+  <div class="price-box">
+    <div class="pb-top">
+      <div class="pb-price">€20</div>
+      <div>
+        <div class="pb-info-t">Licenza personale a vita</div>
+        <div class="pb-info-s">// pagamento unico</div>
+      </div>
+    </div>
+    <div class="pb-features">
+      <div class="pbf">App web su qualsiasi browser e telefono</div>
+      <div class="pbf">Ottimizzazione AI con Claude</div>
+      <div class="pbf">Navigazione GPS turn-by-turn</div>
+      <div class="pbf">Voce italiana + ricalcolo automatico</div>
+      <div class="pbf">Finestre orarie per ogni fermata</div>
+      <div class="pbf">Foto e invio WhatsApp</div>
+      <div class="pbf">Salvataggio giri in JSON</div>
+      <div class="pbf">Aggiornamenti per 12 mesi</div>
+      <div class="pbf">Supporto email entro 48 ore</div>
+      <div class="pbf">Chiave nominativa personale</div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<section class="form-section">
+  <div class="form-box rev">
+    <h3>I tuoi dati</h3>
+    <div class="form-sub">Usiamo nome, cognome ed email solo per inviarti la chiave di accesso.</div>
+    <div class="frow">
+      <div class="fg"><label>Nome *</label><input type="text" id="fNome" placeholder="Mario" autocomplete="given-name"></div>
+      <div class="fg"><label>Cognome *</label><input type="text" id="fCognome" placeholder="Rossi" autocomplete="family-name"></div>
+    </div>
+    <div class="fg"><label>Email *</label><input type="email" id="fEmail" placeholder="mario.rossi@email.it" autocomplete="email"></div>
+    <div class="fg"><label>Azienda (opzionale)</label><input type="text" id="fAzienda" placeholder="Nome azienda o P.IVA"></div>
+    <div class="warn-box">
+      <span class="wb-ico">🔐</span>
+      <div class="wb-t">
+        <strong>CHIAVE STRETTAMENTE PERSONALE E NON CEDIBILE</strong>
+        La chiave è nominativa e valida per un solo dispositivo. Non va condivisa, prestata o trasferita. In caso di violazione la licenza verrà revocata senza rimborso.
+      </div>
+    </div>
+    <div class="consent">
+      <label>
+        <input type="checkbox" id="fPrivacy">
+        Ho letto e accetto la <a href="#" onclick="apriPrivacy();return false">Privacy Policy</a>. Acconsento al trattamento dei miei dati. Confermo che la chiave è personale e non cedibile.
+      </label>
+    </div>
+    <button class="pp-btn" onclick="procediPagamento()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#003087"/><path d="M7 7h5.5c2.5 0 4 1.2 3.5 3.5-.5 2-2.5 3-4.5 3H10l-.8 3.5H7z" fill="#009cde"/><path d="M10 10.5h2c1 0 1.5.4 1.3 1.3-.2.8-.9 1.2-1.8 1.2H9.7z" fill="white"/></svg>
+      Acquista con PayPal — €20
+    </button>
+    <div class="pp-note">// 🔒 pagamento sicuro &nbsp;·&nbsp; rimborso entro 7 giorni</div>
+    <div id="successBox">
+      <div class="si">🎉</div>
+      <div class="st" id="sNome">Grazie!</div>
+      <div class="ss">Pagamento ricevuto.<br>Riceverai il link dell'app e la tua chiave personale all'indirizzo <strong id="sEmail" style="color:var(--ocra)"></strong> entro 24 ore.<br><br><span style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.5px">🔐 La chiave è personale — non condividerla.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2025 Giro Consegne Pro &nbsp;·&nbsp; Luca Buzzolan — Veneto</div>
+  <div style="display:flex;gap:24px">
+    <a href="#" onclick="apriPrivacy();return false">Privacy Policy</a>
+    <a href="mailto:buzzoluca73@gmail.com">buzzoluca73@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+const PP='buzzoluca73@gmail.com',PR='20.00',VA='EUR';
+// CURSORE
+const cdot=document.getElementById('cdot'),ring=document.getElementById('ring');
+document.addEventListener('mousemove',e=>{
+  cdot.style.left=e.clientX+'px';cdot.style.top=e.clientY+'px';
+  ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';
+});
+document.querySelectorAll('a,button,input,.feat,.pain-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.transform='translate(-50%,-50%) scale(1.8)';ring.style.borderColor='rgba(200,138,42,.5)';});
+  el.addEventListener('mouseleave',()=>{ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.borderColor='rgba(200,138,42,.35)';});
+});
+// AUDIO
+const aud=document.getElementById('bgAudio'),abtn=document.getElementById('audioBtn');
+let aon=false;
+function tryPlay(){aud.volume=0.1;aud.play().then(()=>{aon=true;abtn.textContent='🔊';}).catch(()=>{});}
+document.addEventListener('click',()=>{if(!aon)tryPlay();},{once:true});
+document.addEventListener('touchstart',()=>{if(!aon)tryPlay();},{once:true});
+abtn.addEventListener('click',e=>{e.stopPropagation();if(aon){aud.pause();aon=false;abtn.textContent='🔇';}else{aud.play();aon=true;abtn.textContent='🔊';}});
+// PRIVACY
+function apriPrivacy(){document.getElementById('privOv').classList.add('on');}
+function chiudiPrivacy(){document.getElementById('privOv').classList.remove('on');}
+document.getElementById('privOv').addEventListener('click',e=>{if(e.target===document.getElementById('privOv'))chiudiPrivacy();});
+// VALIDA
+function valida(){
+  const n=document.getElementById('fNome').value.trim(),c=document.getElementById('fCognome').value.trim();
+  const e=document.getElementById('fEmail').value.trim(),p=document.getElementById('fPrivacy').checked;
+  if(!n){toast('inserisci il nome','e');return null;}
+  if(!c){toast('inserisci il cognome','e');return null;}
+  if(!e.includes('@')){toast('email non valida','e');return null;}
+  if(!p){toast('devi accettare la privacy policy','e');return null;}
+  return{n,c,e,a:document.getElementById('fAzienda').value.trim()};
+}
+// PAYPAL
+function procediPagamento(){
+  const d=valida();if(!d)return;
+  sessionStorage.setItem('acq',JSON.stringify(d));
+  const p=new URLSearchParams({cmd:'_xclick',business:PP,item_name:`Giro Consegne Pro — ${d.n} ${d.c} — ${d.e}`,amount:PR,currency_code:VA,no_shipping:'1',return:window.location.href.split('?')[0]+'?stato=ok',cancel_return:window.location.href.split('?')[0]+'?stato=annullato'});
+  const f=document.createElement('form');f.method='POST';f.action='https://www.paypal.com/cgi-bin/webscr';f.target='_blank';
+  for(const[k,v]of p.entries()){const i=document.createElement('input');i.type='hidden';i.name=k;i.value=v;f.appendChild(i);}
+  document.body.appendChild(f);f.submit();document.body.removeChild(f);
+  toast('paypal aperto — completa il pagamento','i');
+}
+// RITORNO
+window.addEventListener('load',()=>{
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('stato')==='ok'){
+    const d=JSON.parse(sessionStorage.getItem('acq')||'{}');
+    document.getElementById('sNome').textContent=`grazie ${d.n||''}`;
+    document.getElementById('sEmail').textContent=d.e||'';
+    document.getElementById('successBox').style.display='block';
+    document.querySelector('.pp-btn').style.display='none';
+    document.querySelector('.pp-note').style.display='none';
+    document.getElementById('successBox').scrollIntoView({behavior:'smooth',block:'center'});
+    history.replaceState({},'',window.location.pathname);
+  }else if(p.get('stato')==='annullato'){toast('pagamento annullato','e');history.replaceState({},'',window.location.pathname);}
+});
+// TOAST
+let tt;function toast(m,t='i'){const el=document.getElementById('toast');clearTimeout(tt);el.textContent='// '+m;el.className=`toast show ${t}`;tt=setTimeout(()=>el.classList.remove('show'),3200);}
+// REVEAL
+const ob=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});},{threshold:.08});
+document.querySelectorAll('.rev').forEach(el=>ob.observe(el));
+</script>
+</body>
+</html>
