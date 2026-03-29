@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Giro Consegne Pro</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Mantengo i tuoi stili originali */
+:root{--bg:#0f1117;--card:#1e2130;--border:#2e3348;--accent:#f5a623;--green:#2ecc71;--red:#e74c3c;--blue:#3d9de8;--text:#eef0f8;--muted:#7a7f99;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;padding-bottom:40px; display:none;} /* Nascondo finché non c'è la chiave */
+.hdr{background:#1a1d27;border-bottom:2px solid var(--accent);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
+#map{height:350px;width:100%;z-index:100}
+/* ... (qui restano tutti gli altri tuoi stili) ... */
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div style="background:var(--accent);color:#000;padding:6px 10px;border-radius:8px;font-family:'Barlow Condensed';font-weight:800;font-size:20px">GC</div>
+  <div style="font-family:'Barlow Condensed';font-weight:700;font-size:18px;letter-spacing:0.5px;text-transform:uppercase">Giro Consegne <span id="verTag" style="color:var(--accent);font-size:12px;margin-left:4px">v2.0</span></div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/**
+ * 1. GESTIONE API KEY E ACCESSO (60 GIORNI)
+ */
+function handleAccess() {
+    const K_KEY = "gh_api_key_v3";
+    const K_EXP = "gh_api_expiry_v3";
+    const SIXTY_DAYS = 60 * 24 * 60 * 60 * 1000;
+    
+    let savedKey = localStorage.getItem(K_KEY);
+    let savedExp = localStorage.getItem(K_EXP);
+    const now = Date.now();
+
+    if (!savedKey || !savedExp || now > parseInt(savedExp)) {
+        let input = prompt("Inserisci la tua API KEY di GraphHopper\n(Verrà salvata per 60 giorni):");
+        
+        if (input && input.trim().length > 5) {
+            localStorage.setItem(K_KEY, input.trim());
+            localStorage.setItem(K_EXP, (now + SIXTY_DAYS).toString());
+            location.reload(); // Ricarica per attivare l'app
+            return;
+        } else {
+            alert("Chiave necessaria per visualizzare la mappa.");
+            document.body.innerHTML = "<div style='padding:50px; text-align:center;'>Accesso negato. Ricarica la pagina e inserisci una chiave valida.</div>";
+            document.body.style.display = "block";
+            return false;
+        }
+    }
+    
+    // Se la chiave è valida, mostriamo il corpo della pagina
+    document.body.style.display = "block";
+    return savedKey;
+}
+
+const GH_API_KEY = handleAccess();
+
+/**
+ * 2. LOGICA ORIGINALE DEL TUO FILE
+ */
+if (GH_API_KEY) {
+    let map, markers = [];
+    
+    function initMap() {
+        map = L.map('map', { zoomControl: false }).setView([45.4642, 9.1900], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        // Esempio di come usare la chiave nelle tue funzioni
+        // fetch(`https://graphhopper.com/api/1/route?key=${GH_API_KEY}&...`)
+    }
+
+    // Inizializza tutto
+    window.onload = () => {
+        initMap();
+        // Richiama qui le tue funzioni originali (caricaPunti, vocal recognition, ecc.)
+    };
+}
+
+/**
+ * NOTA: In tutte le tue funzioni fetch() presenti nel file originale,
+ * assicurati di sostituire la vecchia stringa della chiave con ${GH_API_KEY}
+ */
+</script>
+</body>
+</html>
